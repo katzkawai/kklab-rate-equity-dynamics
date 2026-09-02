@@ -7,7 +7,7 @@
 
 ## 🌐 GitHub Pages 公開URL
 本リポジトリは GitHub Pages としてそのまま公開可能です。
-- **公開ページ URL**: `https://katzkawai.github.io/kklab-gemini/`
+- **公開ページ URL**: `https://katzkawai.github.io/kklab-rate-equity-dynamics/`
 
 ---
 
@@ -112,7 +112,7 @@ $$\text{Earnings Yield } \frac{E}{P} = r_f + ERP - g \iff \text{Fair PER} = \fra
    - 左サイドバーの `Pages` をクリック
    - **Build and deployment** の `Source` で `Deploy from a branch` を選択
    - **Branch** で `main` / `/ (root)` を選択して `Save` をクリック
-3. 数分後、`https://katzkawai.github.io/kklab-gemini/` にて公開されます。
+3. 数分後、`https://katzkawai.github.io/kklab-rate-equity-dynamics/` にて公開されます。
 
 ---
 
