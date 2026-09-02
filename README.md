@@ -5,9 +5,19 @@
 
 ---
 
+## 🤖 About this Project & Antigravity
+
+本プロジェクトおよびWebサイトは、**Google DeepMind の次世代AIコーディングエージェント「[Antigravity](https://deepmind.google/)」**とのペアプログラミングによって設計・実装・検証・GitHub Pagesへの公開まで一貫して作成されました。
+
+- **目的**: ファイナンス理論・金融経済学における「金利上昇と株価下落の相関メカニズム」を、数学的証明（微積分・無限級数）とグラフィカルな対話型シミュレーションを通じて誰でも直感的に学べるオープンソース教材を提供すること。
+- **技術スタック**: HTML5, CSS3 (モダンファイナンシャルUI / ダーク・ライトモード), ES6 JavaScript, Chart.js 4.4, KaTeX (LaTeX数式レンダリング), Lucide Icons, GitHub Pages.
+
+---
+
 ## 🌐 GitHub Pages 公開URL
-本リポジトリは GitHub Pages としてそのまま公開可能です。
-- **公開ページ URL**: `https://katzkawai.github.io/kklab-rate-equity-dynamics/`
+本Webアプリケーションは GitHub Pages にて公開されています。
+- **公開ページ URL**: [https://katzkawai.org/kklab-rate-equity-dynamics/](https://katzkawai.org/kklab-rate-equity-dynamics/)  
+  *(GitHubドメイン: [https://katzkawai.github.io/kklab-rate-equity-dynamics/](https://katzkawai.github.io/kklab-rate-equity-dynamics/))*
 
 ---
 
@@ -99,23 +109,6 @@ $$\text{Earnings Yield } \frac{E}{P} = r_f + ERP - g \iff \text{Fair PER} = \fra
 
 ---
 
-## 🚀 GitHub Pages への公開手順
-
-1. **リポジトリへのプッシュ**:
-   ```bash
-   git add .
-   git commit -m "feat: 金利と株価の数理メカニズムWebページ実装"
-   git push origin main
-   ```
-2. **GitHub Pages の有効化**:
-   - GitHubリポジトリ画面で `Settings` タブを開く
-   - 左サイドバーの `Pages` をクリック
-   - **Build and deployment** の `Source` で `Deploy from a branch` を選択
-   - **Branch** で `main` / `/ (root)` を選択して `Save` をクリック
-3. 数分後、`https://katzkawai.github.io/kklab-rate-equity-dynamics/` にて公開されます。
-
----
-
 ## 📚 参考文献・理論的背景
 - Gordon, M. J. (1959). *Dividends, Dilution, and the Cost of Capital*. The Journal of Finance.
 - Sharpe, W. F. (1964). *Capital Asset Prices: A Theory of Market Equilibrium*. The Journal of Finance.
@@ -123,4 +116,4 @@ $$\text{Earnings Yield } \frac{E}{P} = r_f + ERP - g \iff \text{Fair PER} = \fra
 - Asness, C. S. (2003). *Fight the FED Model: The Relationship Between Stock Market Yields, Bond Yields, and Expected Returns*. The Journal of Portfolio Management.
 
 ---
-Created with ❤️ for Quantitative Finance & Economics Education.
+Created with ❤️ using **Antigravity** (Google DeepMind) for Quantitative Finance & Economics Education.
