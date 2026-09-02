@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金利と株価の数理メカニズム | なぜ利上げで株価は下落するのか？</title>
+    <meta name="description" content="金利上昇が株価を下落させるメカニズムを、DCFモデル・ゴードンモデル・株式デュレーション・Fedモデルなどの数理的アプローチとインタラクティブなグラフシミュレーションで徹底解説。">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Background glow elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navigation Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i data-lucide="trending-down"></i>
+                </div>
+                <div>
+                    <span class="logo-title">Rate & Equity Dynamics</span>
+                    <span class="logo-subtitle">金利と株価の数理メカニズム</span>
+                </div>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#summary">3大要因</a>
+                <a href="#dcf-model">DCF数理モデル</a>
+                <a href="#duration-section">株式デュレーション</a>
+                <a href="#multiple-compression">PER・Fedモデル</a>
+                <a href="#simulator">総合シミュレーター</a>
+                <a href="#macro-nuance">例外とマクロ</a>
+            </nav>
+
+            <div class="header-actions">
+                <button id="themeToggle" class="btn-icon" aria-label="テーマ切り替え">
+                    <i data-lucide="sun" class="sun-icon"></i>
+                    <i data-lucide="moon" class="moon-icon"></i>
+                </button>
+                <a href="https://github.com/katzkawai/kklab-gemini" target="_blank" rel="noopener" class="btn-github">
+                    <i data-lucide="github"></i>
+                    <span>GitHub</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="badge-pill">
+                    <i data-lucide="atom"></i>
+                    <span>Quantitative Financial Economics</span>
+                </div>
+                <h1 class="hero-title">
+                    なぜ金利を上げると<br class="mobile-break">
+                    <span class="gradient-text">株価は下落するのか？</span>
+                </h1>
+                <p class="hero-desc">
+                    中央銀行の利上げが株式市場に与える下落圧力を、割引現在価値法（DCF）、ゴードン成長モデル、株式デュレーション、Fedモデルの数式を用いて厳密に証明し、直感的なインタラクティブ・シミュレーションで解き明かします。
+                </p>
+
+                <div class="hero-stats-grid">
+                    <div class="hero-stat-card">
+                        <div class="stat-icon channel-1"><i data-lucide="calculator"></i></div>
+                        <div class="stat-number">分母効果</div>
+                        <div class="stat-label">将来キャッシュフローの割引率上昇</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="stat-icon channel-2"><i data-lucide="building-2"></i></div>
+                        <div class="stat-number">分子効果</div>
+                        <div class="stat-label">支払利息増・投資抑制による利益減少</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="stat-icon channel-3"><i data-lucide="scale"></i></div>
+                        <div class="stat-number">裁定・代替効果</div>
+                        <div class="stat-label">安全資産（国債）との相対魅力低下</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Scenario Selector (Preset Bar) -->
+        <section class="preset-section">
+            <div class="container">
+                <div class="preset-wrapper">
+                    <span class="preset-label"><i data-lucide="sliders"></i> 歴史的シナリオで試す:</span>
+                    <div class="preset-buttons">
+                        <button class="btn-preset active" data-preset="baseline">標準モデル (平時)</button>
+                        <button class="btn-preset" data-preset="hike2022">2022年 FRB急激利上げ</button>
+                        <button class="btn-preset" data-preset="bubbleZero">ゼロ金利・金融緩和バブル</button>
+                        <button class="btn-preset" data-preset="growthTech">超高成長グロース銘柄</button>
+                        <button class="btn-preset" data-preset="stagflation">スタグフレーション (金利高・低成長)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 1: 3 Core Transmission Channels -->
+        <section id="summary" class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Mechanism Overview</span>
+                    <h2>金利上昇が株価を下落させる3つの波及経路</h2>
+                    <p class="section-subtitle">金融工学・企業財務論において、金利が株価に影響を与える経路は3つに大別されます。</p>
+                </div>
+
+                <div class="channels-grid">
+                    <!-- Channel 1 -->
+                    <div class="channel-card">
+                        <div class="card-header-icon ch-blue">
+                            <i data-lucide="divide"></i>
+                            <span class="ch-tag">経路 1</span>
+                        </div>
+                        <h3>① 割引率の上昇（分母の拡大）</h3>
+                        <p class="ch-text">
+                            株式の本源的価値は「将来受け取る全キャッシュフローを現在価値に割り引いた合計」です。
+                            金利（無リスク金利 $r_f$）が上昇すると、投資家が求める期待収益率（割引率 $r$）が上昇します。
+                            分母が大きくなるため、<strong>将来の利益の現在価値が縮小し、理論株価は必然的に低下</strong>します。
+                        </p>
+                        <div class="math-box">
+                            $$P_0 = \sum_{t=1}^{\infty} \frac{CF_t}{(1 + \mathbf{r})^t} \quad (\mathbf{r} \uparrow \implies P_0 \downarrow)$$
+                        </div>
+                    </div>
+
+                    <!-- Channel 2 -->
+                    <div class="channel-card">
+                        <div class="card-header-icon ch-purple">
+                            <i data-lucide="trending-down"></i>
+                            <span class="ch-tag">経路 2</span>
+                        </div>
+                        <h3>② 企業業績・成長率の鈍化（分子の縮小）</h3>
+                        <p class="ch-text">
+                            政策金利の上昇により、企業の借入金利（負債コスト）が上昇し、支払利息が増加して純利益（EPS）が圧迫されます。
+                            また、資本コスト（WACC）が高まることで新規投資の採算ライン（ハードルレート）が上がり、
+                            企業の設備投資や研究開発が抑制され、<strong>将来の利益成長率 $g$ が低下</strong>します。
+                        </p>
+                        <div class="math-box">
+                            $$\text{Net Income} \downarrow \,,\, \text{CapEx} \downarrow \implies CF_t \downarrow \,,\, g \downarrow$$
+                        </div>
+                    </div>
+
+                    <!-- Channel 3 -->
+                    <div class="channel-card">
+                        <div class="card-header-icon ch-amber">
+                            <i data-lucide="arrow-left-right"></i>
+                            <span class="ch-tag">経路 3</span>
+                        </div>
+                        <h3>③ 資産選択の裁定効果（Fedモデル）</h3>
+                        <p class="ch-text">
+                            安全資産である国債の利回り（$Y_{\text{bond}}$）が上昇すると、リスク資産である株式を保有する相対的な魅力が低下します。
+                            株式益利回り（$E/P$、PERの逆数）が国債利回り＋株式リスクプレミアム（ERP）に見合う水準まで上昇する必要があるため、
+                            <strong>株価収益率（PER）のバリュエーション圧縮（Multiple Compression）</strong>が起きます。
+                        </p>
+                        <div class="math-box">
+                            $$\text{Earnings Yield } \frac{E}{P} \ge Y_{\text{bond}} + ERP \implies PER \downarrow \implies P \downarrow$$
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 2: Mathematical Derivation via DCF & Gordon Model -->
+        <section id="dcf-model" class="content-section bg-alt">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Rigorous Proof</span>
+                    <h2>数理的証明：DCF法とゴードン成長モデル</h2>
+                    <p class="section-subtitle">微分積分と割引キャッシュフロー理論を用いた厳密な数理証明</p>
+                </div>
+
+                <div class="two-col-layout">
+                    <!-- Math Formulation -->
+                    <div class="text-content-pane">
+                        <div class="proof-card">
+                            <h3><i data-lucide="file-text"></i> 1. 定義と前提条件</h3>
+                            <p>
+                                配当割引モデル（Dividend Discount Model / DDM）およびゴードン成長モデルにおいて、
+                                1期後の予想配当（キャッシュフロー）を $D_1$、株主資本コスト（割引率）を $r$、配当の永続成長率を $g$ とすると、理論株価 $P$ は無限等比級数の和として定義されます：
+                            </p>
+                            <div class="math-callout">
+                                $$P = \sum_{t=1}^{\infty} \frac{D_0 (1+g)^t}{(1+r)^t} = \frac{D_1}{r - g} \quad (r > g)$$
+                            </div>
+                            <p>
+                                資本資産評価モデル（CAPM）により、割引率 $r$ は無リスク金利 $r_f$、市場リスクプレミアム $ERP$、ベータ値 $\beta$ に分解されます：
+                            </p>
+                            <div class="math-callout">
+                                $$r(r_f) = r_f + \beta \cdot ERP$$
+                            </div>
+                            <p>
+                                したがって、無リスク金利 $r_f$ に対する割引率の感応度は常に1です：
+                                $\frac{\partial r}{\partial r_f} = 1 > 0$
+                            </p>
+                        </div>
+
+                        <div class="proof-card highlight-border">
+                            <h3><i data-lucide="check-circle-2"></i> 2. 1階微分による株価下落の証明</h3>
+                            <p>
+                                理論株価 $P$ を金利 $r$ で偏微分（1階微分）します：
+                            </p>
+                            <div class="math-callout math-primary">
+                                $$\frac{\partial P}{\partial r} = \frac{\partial}{\partial r} \left( \frac{D_1}{r - g} \right) = - \frac{D_1}{(r - g)^2}$$
+                            </div>
+                            <div class="proof-conclusion">
+                                <i data-lucide="alert-triangle"></i>
+                                <div>
+                                    <strong>証明完了（厳密な単調減少性）：</strong><br>
+                                    将来配当 $D_1 > 0$ かつ $(r - g)^2 > 0$ であるため、
+                                    $$\frac{\partial P}{\partial r} < 0 \quad \text{かつ} \quad \frac{\partial P}{\partial r_f} = \frac{\partial P}{\partial r} \cdot \frac{\partial r}{\partial r_f} = -\frac{D_1}{(r-g)^2} < 0$$
+                                    <strong>ゆえに、金利 $r_f$ が上昇すると理論株価 $P$ は数学的に必ず単調減少します。</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="proof-card">
+                            <h3><i data-lucide="sparkles"></i> 3. 2階微分と凸性（Convexity）</h3>
+                            <p>
+                                2階微分を計算すると、金利感応度の曲率（Convexity）が導かれます：
+                            </p>
+                            <div class="math-callout">
+                                $$\frac{\partial^2 P}{\partial r^2} = \frac{2 D_1}{(r - g)^3} > 0 \quad (r > g)$$
+                            </div>
+                            <p class="math-note">
+                                $\frac{\partial^2 P}{\partial r^2} > 0$ であることは、株価関数 $P(r)$ が<strong>下に凸（Strictly Convex）</strong>であることを示します。
+                                つまり、<strong>「超低金利から少し金利が上がる時」の下落ショックが最も大きく</strong>、金利がすでに高水準にある局面では金利上昇あたりの下落幅は徐々に緩やかになります。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Chart 1 -->
+                    <div class="interactive-pane">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h4>金利 $r_f$ vs 理論株価 $P$ 曲線 & 接線（微分係数）</h4>
+                                    <span class="chart-sub">スライダーを動かして金利と株価の反比例カーブを観察してください</span>
+                                </div>
+                                <div class="badge-tag" id="currentPointBadge">金利: 3.0% → 株価: $100.0</div>
+                            </div>
+
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="gordonCurveChart"></canvas>
+                            </div>
+
+                            <!-- Controls for Chart 1 -->
+                            <div class="controls-panel">
+                                <div class="control-row">
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <label for="rfInput">無リスク金利 $r_f$ (%)</label>
+                                            <span class="val-display" id="rfVal">3.0%</span>
+                                        </div>
+                                        <input type="range" id="rfInput" min="0.1" max="10.0" step="0.1" value="3.0">
+                                    </div>
+
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <label for="erpInput">株式リスクプレミアム ERP (%)</label>
+                                            <span class="val-display" id="erpVal">5.0%</span>
+                                        </div>
+                                        <input type="range" id="erpInput" min="2.0" max="8.0" step="0.1" value="5.0">
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <label for="gInput">永続成長率 $g$ (%)</label>
+                                            <span class="val-display" id="gVal">3.0%</span>
+                                        </div>
+                                        <input type="range" id="gInput" min="0.0" max="6.0" step="0.1" value="3.0">
+                                    </div>
+
+                                    <div class="control-group">
+                                        <div class="control-label-row">
+                                            <label for="d1Input">予想1株あたり配当 $D_1$ ($)</label>
+                                            <span class="val-display" id="d1Val">$5.00</span>
+                                        </div>
+                                        <input type="range" id="d1Input" min="1.0" max="15.0" step="0.5" value="5.0">
+                                    </div>
+                                </div>
+
+                                <div class="metrics-row">
+                                    <div class="metric-box">
+                                        <span class="m-label">総割引率 $r = r_f + ERP$</span>
+                                        <span class="m-val" id="totalDiscountRate">8.00%</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="m-label">スプレッド $(r - g)$</span>
+                                        <span class="m-val" id="spreadRate">5.00%</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="m-label">理論株価 $P = \frac{D_1}{r - g}$</span>
+                                        <span class="m-val highlight" id="calcPrice">$100.00</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="m-label">1%利上げ時の株価変動額 $(\frac{dP}{dr})$</span>
+                                        <span class="m-val danger" id="calcSlope">-$20.00 (-20.0%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 3: Equity Duration & Cash Flow Timing (Growth vs Value) -->
+        <section id="duration-section" class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Duration Analysis</span>
+                    <h2>なぜグロース株はバリュー株より利上げに弱いのか？</h2>
+                    <p class="section-subtitle">キャッシュフローの受け取りタイミングと「株式デュレーション（金利感応度）」の数理</p>
+                </div>
+
+                <div class="explanation-box">
+                    <p>
+                        債券市場で使われる<strong>デュレーション（Duration：回収期間・金利感応度）</strong>の概念は株式にもそのまま適用できます。
+                        株価 $P = \sum_{t=1}^{\infty} \frac{CF_t}{(1+r)^t}$ を金利 $r$ で対数微分すると修正デュレーション $D_{\text{mod}}$ が導かれます：
+                    </p>
+                    <div class="math-callout">
+                        $$D_{\text{mod}} = - \frac{1}{P} \frac{\partial P}{\partial r} = \frac{1}{1+r} \sum_{t=1}^{\infty} t \cdot \left[ \frac{CF_t / (1+r)^t}{P} \right] = \frac{\text{Macaulay Duration}}{1+r}$$
+                    </div>
+                    <p>
+                        ゴードンモデルにおける株式デュレーションは極めてシンプルな形で表されます：
+                        $$D_{\text{equity}} \approx \frac{1}{r - g}$$
+                        <strong>成長率 $g$ が高いグロース企業は $(r - g)$ が小さいためデュレーションが極めて長く、金利上昇に対する株価下落率が何倍も大きくなります。</strong>
+                    </p>
+                </div>
+
+                <!-- Interactive Duration & Cash Flow Visualizer -->
+                <div class="duration-grid">
+                    <!-- Left: Cash Flow Breakdown Bar Chart -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div>
+                                <h4>年別キャッシュフローの割引現在価値比較 (1年後〜20年後)</h4>
+                                <span class="chart-sub">遠い未来のCFほど、金利上昇（$(1+r)^t$の指数関数的増大）で激しく目減りします</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrapper" style="height: 340px;">
+                            <canvas id="cashflowBarChart"></canvas>
+                        </div>
+                        <div class="chart-legend-custom">
+                            <span class="legend-item"><span class="legend-color color-before"></span> 利上げ前 (金利 2.0%)</span>
+                            <span class="legend-item"><span class="legend-color color-after"></span> 利上げ後 (金利 5.0%)</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Growth vs Value Comparison Dashboard -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div>
+                                <h4>バリュー株 vs グロース株：金利ショック下落率シミュレーション</h4>
+                                <span class="chart-sub">同じ利上げ幅に対する両者の価格崩壊度の違い</span>
+                            </div>
+                        </div>
+                        <div class="chart-canvas-wrapper" style="height: 340px;">
+                            <canvas id="durationCompareChart"></canvas>
+                        </div>
+                        <div class="stock-compare-table-wrapper">
+                            <table class="stock-compare-table">
+                                <thead>
+                                    <tr>
+                                        <th>銘柄タイプ</th>
+                                        <th>CF特徴</th>
+                                        <th>株式デュレーション</th>
+                                        <th>+2% 利上げ時の下落率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge-val">バリュー株 (成熟企業)</span></td>
+                                        <td>足元のCFが大きく、成長率 $g=1.5\%$</td>
+                                        <td id="valDuration">約 15.4 年</td>
+                                        <td id="valDrop" class="drop-val">-23.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge-growth">グロース株 (ハイテク成長)</span></td>
+                                        <td>足元CFは小さく遠い未来で高成長 $g=6.0\%$</td>
+                                        <td id="growthDuration">約 50.0 年</td>
+                                        <td id="growthDrop" class="drop-growth">-50.0%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 4: Multiple Compression & The Fed Model -->
+        <section id="multiple-compression" class="content-section bg-alt">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Valuation Multiples</span>
+                    <h2>FedモデルとPER（株価収益率）の圧縮メカニズム</h2>
+                    <p class="section-subtitle">なぜ金利が上がると株式の許容バリュエーション（PER）が切り下がるのか？</p>
+                </div>
+
+                <div class="two-col-layout">
+                    <!-- Left: Fed Model Math -->
+                    <div class="text-content-pane">
+                        <div class="proof-card">
+                            <h3><i data-lucide="layers"></i> 株式益利回りとPERの数理関係</h3>
+                            <p>
+                                企業の1株あたり純利益を $EPS$、配当性向を $1.0$ と仮定すると、株価収益率 $PER = \frac{P}{EPS}$ と株式益利回り $\frac{EPS}{P}$ は次のように表されます：
+                            </p>
+                            <div class="math-callout">
+                                $$\text{Earnings Yield} = \frac{EPS}{P} = r - g = (r_f + ERP) - g$$
+                            </div>
+                            <p>
+                                両辺の逆数を取ると、適正PERの理論式が得られます：
+                            </p>
+                            <div class="math-callout math-primary">
+                                $$\text{Fair PER} = \frac{1}{r_f + ERP - g}$$
+                            </div>
+                            <p>
+                                <strong>【マルチプル・コンプレッション（PER圧縮）】</strong><br>
+                                企業業績（$EPS$）が一切変わらなくても、無リスク金利 $r_f$ が $1\% \to 5\%$ に上昇するだけで、分母が拡大するため<strong>適正PERは $25倍 \to 12.5倍$ へと半減</strong>します。
+                                これが「業績は好調なのに金利上昇で株価が急落する」現象の数理的背景です。
+                            </p>
+                        </div>
+
+                        <div class="proof-card">
+                            <h3><i data-lucide="scale"></i> イールド・スプレッドと資産配分</h3>
+                            <p>
+                                投資家は「株式益利回り」と「10年物国債利回り」を常に天秤にかけています（Fedモデル）。
+                            </p>
+                            <div class="math-callout">
+                                $$\text{Yield Spread} = \frac{EPS}{P} - Y_{\text{bond}} \approx ERP - g$$
+                            </div>
+                            <p>
+                                国債利回りが $1\%$ から $5\%$ に上昇すると、無リスクで $5\%$ 得られるため、リスクを負って株式に投資する要求利回りが高まり、資金が株式から債券へとシフト（ポートフォリオ・リバランス）します。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Interactive Multiple Compression Chart -->
+                    <div class="interactive-pane">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h4>金利上昇に伴う適正PER（バリュエーション倍率）の収縮曲線</h4>
+                                    <span class="chart-sub">金利水準ごとの許容PERの変化</span>
+                                </div>
+                            </div>
+                            <div class="chart-canvas-wrapper" style="height: 320px;">
+                                <canvas id="perCurveChart"></canvas>
+                            </div>
+                            <div class="per-comparison-box">
+                                <div class="per-stat-item">
+                                    <span class="per-stat-title">ゼロ金利時代 ($r_f = 0.5\%$)</span>
+                                    <span class="per-stat-val text-cyan" id="perLow">PER 28.6 倍</span>
+                                </div>
+                                <div class="per-arrow"><i data-lucide="arrow-right"></i></div>
+                                <div class="per-stat-item">
+                                    <span class="per-stat-title">利上げ局面 ($r_f = 5.0\%$)</span>
+                                    <span class="per-stat-val text-danger" id="perHigh">PER 12.5 倍</span>
+                                </div>
+                                <div class="per-ratio-badge" id="perDropRatio">マルチプル -56.3% 圧縮</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 5: Master Interactive Financial Simulator -->
+        <section id="simulator" class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Unified Lab</span>
+                    <h2>総合インタラクティブ・ファイナンス・ラボ</h2>
+                    <p class="section-subtitle">すべての変数を自由に操作し、リアルタイムに理論株価・感応度・ポートフォリオ価値を算出</p>
+                </div>
+
+                <div class="simulator-card">
+                    <!-- Top control grid -->
+                    <div class="sim-controls-grid">
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="percent"></i> 無リスク金利 ($r_f$)</span>
+                                <span class="param-val" id="simRfVal">3.5%</span>
+                            </div>
+                            <input type="range" id="simRf" min="0.0" max="10.0" step="0.25" value="3.5">
+                            <span class="param-desc">10年国債利回り等の基準金利</span>
+                        </div>
+
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="shield-alert"></i> 株式リスクプレミアム (ERP)</span>
+                                <span class="param-val" id="simErpVal">5.0%</span>
+                            </div>
+                            <input type="range" id="simErp" min="1.0" max="9.0" step="0.25" value="5.0">
+                            <span class="param-desc">株式市場全体のリスク見返り</span>
+                        </div>
+
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="activity"></i> 銘柄ベータ値 ($\beta$)</span>
+                                <span class="param-val" id="simBetaVal">1.20</span>
+                            </div>
+                            <input type="range" id="simBeta" min="0.5" max="2.5" step="0.05" value="1.20">
+                            <span class="param-desc">市場全体に対する値動きの感応度</span>
+                        </div>
+
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="trending-up"></i> 利益成長率 ($g$)</span>
+                                <span class="param-val" id="simGVal">4.0%</span>
+                            </div>
+                            <input type="range" id="simG" min="0.0" max="8.0" step="0.25" value="4.0">
+                            <span class="param-desc">企業の長期持続可能成長率</span>
+                        </div>
+
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="dollar-sign"></i> 基準キャッシュフロー ($CF_1$)</span>
+                                <span class="param-val" id="simCfVal">$10.0</span>
+                            </div>
+                            <input type="range" id="simCf" min="1.0" max="50.0" step="1.0" value="10.0">
+                            <span class="param-desc">1株あたり予想フリーキャッシュフロー</span>
+                        </div>
+
+                        <div class="sim-param-box">
+                            <div class="sim-param-header">
+                                <span class="param-name"><i data-lucide="zap"></i> 金利ショック幅 ($\Delta r_f$)</span>
+                                <span class="param-val" id="simDeltaVal">+1.50%</span>
+                            </div>
+                            <input type="range" id="simDelta" min="0.25" max="4.0" step="0.25" value="1.50">
+                            <span class="param-desc">利上げシミュレーション幅</span>
+                        </div>
+                    </div>
+
+                    <!-- Realtime Results Dashboard -->
+                    <div class="sim-results-dashboard">
+                        <div class="sim-result-card base-card">
+                            <div class="res-tag">現状の理論値 (金利 <span id="resBaseRate">3.5%</span>)</div>
+                            <div class="res-main-val" id="resBasePrice">$181.82</div>
+                            <div class="res-sub-grid">
+                                <div><span>割引率 $r$:</span> <strong id="resBaseDiscount">9.50%</strong></div>
+                                <div><span>適正PER:</span> <strong id="resBasePER">18.2倍</strong></div>
+                                <div><span>デュレーション:</span> <strong id="resBaseDuration">18.2年</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="sim-arrow-divider">
+                            <div class="shock-indicator">
+                                <i data-lucide="chevrons-right"></i>
+                                <span id="resShockTag">+1.50% 利上げ</span>
+                            </div>
+                        </div>
+
+                        <div class="sim-result-card shock-card">
+                            <div class="res-tag">利上げ後の理論値 (金利 <span id="resShockRate">5.0%</span>)</div>
+                            <div class="res-main-val danger-text" id="resShockPrice">$142.86</div>
+                            <div class="res-sub-grid">
+                                <div><span>割引率 $r$:</span> <strong id="resShockDiscount">11.00%</strong></div>
+                                <div><span>適正PER:</span> <strong id="resShockPER">14.3倍</strong></div>
+                                <div><span>デュレーション:</span> <strong id="resShockDuration">14.3年</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="sim-result-card impact-card">
+                            <div class="res-tag">金利ショックによる総影響</div>
+                            <div class="res-main-val impact-text" id="resPriceChange">-$38.96</div>
+                            <div class="res-percent-change" id="resPercentChange">-21.43% 下落</div>
+                            <div class="impact-note" id="resImpactNote">株式価値の約 1/5 が消失</div>
+                        </div>
+                    </div>
+
+                    <!-- Sensitivity Heatmap Table -->
+                    <div class="sensitivity-table-wrapper">
+                        <div class="table-title">
+                            <i data-lucide="grid"></i>
+                            <span>理論株価マトリックス（無リスク金利 $r_f$ × 成長率 $g$）</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="heatmap-table" id="sensitivityTable">
+                                <!-- Generated dynamically via JS -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 6: Empirical Nuances & Macro Exceptions -->
+        <section id="macro-nuance" class="content-section bg-alt">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-badge">Macro Context</span>
+                    <h2>例外と実務：金利上昇でも株価が上がるケースとは？</h2>
+                    <p class="section-subtitle">「良い金利上昇（業績相場）」と「悪い金利上昇（引き締めショック）」の数理条件</p>
+                </div>
+
+                <div class="nuance-grid">
+                    <div class="nuance-card">
+                        <div class="nuance-icon green"><i data-lucide="trending-up"></i></div>
+                        <h3>① 景気拡大による「良い金利上昇」 ($\Delta g > \Delta r$)</h3>
+                        <p>
+                            経済が力強く回復している局面では、自然利子率とともに金利が上昇します。
+                            このとき、企業の利益成長率の上昇幅 $\Delta g$ が割引率の上昇幅 $\Delta r$ を上回る場合、
+                            分母 $(r - g)$ が縮小するため、<strong>金利上昇と株価上昇が同時に起こります</strong>。
+                        </p>
+                        <div class="math-box">
+                            $$P_{\text{new}} = \frac{D_1 + \Delta D}{(r + \Delta r) - (g + \mathbf{\Delta g})} > P_{\text{old}} \quad (\text{if } \Delta g > \Delta r)$$
+                        </div>
+                    </div>
+
+                    <div class="nuance-card">
+                        <div class="nuance-icon red"><i data-lucide="flame"></i></div>
+                        <h3>② インフレ抑制のための「悪い金利上昇」 ($\Delta r > 0, \Delta g \le 0$)</h3>
+                        <p>
+                            景気が過熱していないにもかかわらず、供給ショックやインフレ退治のために中央銀行が急激に利上げを行う場合（例: 2022年のFRB）、
+                            成長率 $g$ は横ばいまたはリセッション懸念で低下する一方、割引率 $r$ だけが跳ね上がります。
+                            この場合、<strong>純粋な数理的下落圧力が最大化</strong>されます。
+                        </p>
+                        <div class="math-box">
+                            $$\Delta r > 0 \,,\, \Delta g \le 0 \implies (r - g) \uparrow \uparrow \implies P \Downarrow$$
+                        </div>
+                    </div>
+
+                    <div class="nuance-card">
+                        <div class="nuance-icon blue"><i data-lucide="building"></i></div>
+                        <h3>③ 金利上昇の恩恵を受けるセクター（銀行・金融株）</h3>
+                        <p>
+                            一般的な事業会社とは異なり、銀行などの預貸ビジネスモデルでは、金利上昇によって貸出金利と預金金利の利ざや（Net Interest Margin: NIM）が拡大し、利益キャッシュフロー $CF$ が急増するため、利上げ局面で株価が上昇することがあります。
+                        </p>
+                        <div class="math-box">
+                            $$\text{NIM} \uparrow \implies CF_{\text{bank}} \uparrow \uparrow \implies P_{\text{bank}} \uparrow$$
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary & Key Equations Cheat Sheet -->
+        <section class="content-section">
+            <div class="container">
+                <div class="summary-card">
+                    <div class="summary-header">
+                        <i data-lucide="book-open"></i>
+                        <h2>数理ファイナンス要約チートシート</h2>
+                    </div>
+                    <div class="summary-table-wrapper">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th>モデル / 概念</th>
+                                    <th>数式</th>
+                                    <th>金利感応度 ($\partial / \partial r$)</th>
+                                    <th>株価へのインプリケーション</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ゴードン成長モデル</strong></td>
+                                    <td>$$P = \frac{D_1}{r - g}$$</td>
+                                    <td>$$\frac{\partial P}{\partial r} = -\frac{D_1}{(r-g)^2} < 0$$</td>
+                                    <td>金利上昇は分母を拡大させ、理論株価を単調減少させる。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>多期間DCFモデル</strong></td>
+                                    <td>$$P = \sum_{t=1}^n \frac{CF_t}{(1+r)^t}$$</td>
+                                    <td>$$\frac{\partial P}{\partial r} = -\sum_{t=1}^n \frac{t \cdot CF_t}{(1+r)^{t+1}} < 0$$</td>
+                                    <td>将来のすべてのCF現在価値が目減り。遠い将来のCFほど減少率が大。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>株式デュレーション</strong></td>
+                                    <td>$$D_{\text{equity}} \approx \frac{1}{r - g}$$</td>
+                                    <td>$$\frac{\Delta P}{P} \approx - D_{\text{equity}} \cdot \Delta r$$</td>
+                                    <td>高成長株（$g$ が高い）ほどデュレーションが長く、利上げに極めて脆弱。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>理論PER (Fedモデル)</strong></td>
+                                    <td>$$PER = \frac{1}{r_f + ERP - g}$$</td>
+                                    <td>$$\frac{\partial PER}{\partial r_f} = -\frac{1}{(r_f+ERP-g)^2} < 0$$</td>
+                                    <td>金利上昇により株式の許容バリュエーション（倍率）が圧縮される。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <div class="logo-icon small"><i data-lucide="trending-down"></i></div>
+                <span>Quantitative Finance Lab</span>
+            </div>
+            <p class="footer-text">
+                Published on GitHub Pages. Open source educational financial analysis web application.
+            </p>
+            <div class="footer-links">
+                <a href="https://github.com/katzkawai/kklab-gemini" target="_blank" rel="noopener">
+                    <i data-lucide="github"></i> Repository
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
