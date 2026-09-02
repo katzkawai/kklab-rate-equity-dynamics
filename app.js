@@ -782,13 +782,7 @@ function toggleTheme() {
 // Initialization on DOM Ready
 // ============================================================================
 
-window.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Lucide Icons
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
-
-    // 2. Render LaTeX Formulas with KaTeX
+function renderMathSafe() {
     if (window.renderMathInElement) {
         window.renderMathInElement(document.body, {
             delimiters: [
@@ -797,7 +791,19 @@ window.addEventListener('DOMContentLoaded', () => {
             ],
             throwOnError: false
         });
+    } else {
+        setTimeout(renderMathSafe, 100);
     }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize Lucide Icons
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+
+    // 2. Render LaTeX Formulas with KaTeX
+    renderMathSafe();
 
     // 3. Initialize All Charts
     initGordonCurveChart();
